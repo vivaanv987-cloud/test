@@ -38,11 +38,11 @@ strBat = strTempPath & "\del_" & objFSO.GetFileName(WScript.ScriptFullName) & ".
 
 Set objBatFile = objFSO.CreateTextFile(strBat, True)
 objBatFile.WriteLine "@echo off"
-objBatFile.WriteLine "ping 127.0.0.1 -n 3 > nul" ' 2-second delay
-objBatFile.WriteLine "del """ & WScript.ScriptFullName & """"
-objBatFile.WriteLine "del %~f0"
+objBatFile.WriteLine "ping 127.0.0.1 -n 3 > nul" ' 2-second delay to ensure script exit
+objBatFile.WriteLine "del """ & WScript.ScriptFullName & """" ' delete the VBScript file
+objBatFile.WriteLine "del %~f0" ' delete this batch file itself
 objBatFile.Close
 
-' Run helper batch file hidden and do NOT wait for it (let it delete VBScript)
+' Run helper batch file hidden and asynchronous (no wait)
 Set wshShell = CreateObject("WScript.Shell")
 wshShell.Run Chr(34) & strBat & Chr(34), 0, False
